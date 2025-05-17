@@ -1,0 +1,878 @@
+openapi: 3.0.0
+info:
+  title: online-learning-platform
+  description: Online Learning Platform
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://
+    description: AWS server
+
+tags:
+  - name: Login
+    description: Login section
+  - name: User
+    description: User management
+  - name: Category
+    description: Category management
+  - name: Course
+    description: Course management
+  - name: Transaction
+    description: Transaction management
+  - name: Statistics
+    description: Statistics
+
+paths:
+  /login:
+    post:
+      tags:
+        - Login
+      summary: Login Section
+      description: Login Section
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestLogin'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestLogin'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseLogin'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user:
+    post:
+      tags:
+        - User
+      summary: Register Section
+      description: Register Section
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestCreateUser'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCreateUser'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseCreateUser'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /user/{id}:
+    delete:
+      tags:
+        - User
+      summary: Delete User (ADMIN)
+      description: Delete User for admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: User ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /category:
+    get:
+      tags:
+        - Category
+      summary: Get Category List (USER)
+      description: Get Category List for user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Limit
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          description: Sort by
+          schema:
+            type: string
+            enum:
+              - popular
+              - unpopular
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:                      
+                      total_data:
+                        type: integer
+                        example: 543
+                      total_page:
+                        type: integer
+                        example: 6
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 100
+                      sort:
+                        type: string
+                        example: id
+                        enum:
+                          - id
+                          - popular
+                          - unpopular
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResponseCategory'
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Category
+      summary: Create Category (ADMIN)
+      description: Create Category for admin
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestCreateCategory'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /category/{id}:
+    get:
+      tags:
+        - Category
+      summary: Get Category by ID (USER)
+      description: Get Category by ID for user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Category ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ResponseCategory'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Category
+      summary: Edit Category (ADMIN)
+      description: Edit Category for admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Category ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestUpdateCategory'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /course:
+    get:
+      tags:
+        - Course
+      summary: Get Course list (USER)
+      description: Get Course list from user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Limit
+          schema:
+            type: integer
+        - name: search
+          in: query
+          description: Search by name
+          schema:
+            type: string
+        - name: sort
+          in: query
+          description: Sort by
+          schema:
+            type: string
+            enum:
+              - id
+              - highest
+              - lowest
+              - free
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:                      
+                      total_data:
+                        type: integer
+                        example: 543
+                      total_page:
+                        type: integer
+                        example: 6
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 100
+                      search:
+                        type: string
+                        example: John Doe
+                      sort:
+                        type: string
+                        example: id
+                        enum:
+                          - id
+                          - highest
+                          - lowest
+                          - free
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResponseCourse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Course
+      summary: Create Course (ADMIN)
+      description: Create Course for admin
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestCreateCourse'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCreateCourse'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseCreateCourse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /course/{id}:
+    get:
+      tags:
+        - Course
+      summary: Get Course by ID (USER)
+      description: Get Course by ID for user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Course ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseCourse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - Course
+      summary: Edit Course (ADMIN)
+      description: Edit Course for admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Course ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestCreateCourse'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCreateCourse'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseCourse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Course
+      summary: Delete Course (ADMIN)
+      description: Delete Course for admin
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Course ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /transaction:
+    post:
+      tags:
+        - Transaction
+      summary: Create Transaction (USER)
+      description: Create Transaction for user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestCreateTransaction'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequestCreateTransaction'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseTransaction'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /transaction/{id}:
+    get:
+      tags:
+        - Transaction
+      summary: Get Transaction for (USER)
+      description: Get Transaction for user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Transaction ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseTransaction'
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /statistics:
+    get:
+      tags:
+        - Statistics
+      summary: Get Simple Statistics (ADMIN)
+      description: Get Simple Statistics from admin
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseStatistics'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  schemas:
+    RequestCreateCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          example: John Doe
+      required:
+        - name
+    RequestUpdateCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          description: name
+    ResponseCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        name:
+          type: string
+          example: John Doe
+        dtm_crt:
+          type: string
+          format: date
+        dtm_upd:
+          type: string
+          format: date
+      required:
+        - id
+        - name
+        - dtm_crt
+        - dtm_upd
+    RequestLogin:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email
+          example: johndoe@gmail.com
+        password:
+          type: string
+          description: Password
+          example: johndoe123
+      required:
+        - email
+        - password
+    RequestCreateUser:
+      type: object
+      properties:
+        email:
+          type: string
+          description: Email
+          example: johndoe@gmail.com
+        password:
+          type: string
+          description: Password
+          example: johndoe123
+        name:
+          type: string
+          description: Name
+          example: John Doe
+        picture:
+          type: string
+          format: binary
+      required:
+        - email
+        - password
+        - name
+    RequestCreateCourse:
+      type: object
+      properties:
+        category_id:
+          type: integer
+          description: Category ID
+          example: 34
+        name:
+          type: string
+          description: Course name
+          example: John Doe
+        detail:
+          type: string
+          description: Course detail
+          example: This is John Doe
+        price:
+          type: integer
+          description: Course price
+          example: 100000
+        picture:
+          type: string
+          description: Course picture
+          example: https://www.aws.com
+      required:
+        - category_id
+        - name
+        - price
+    ResponseCourse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        category_id:
+          type: integer
+          example: 5
+        name:
+          type: string
+          example: John Doe
+        detail:
+          type: string
+          example: This is John Doe
+        price:
+          type: integer
+          example: 100000
+        picture:
+          type: string
+          example: https://www.aws.com
+        dtm_crt:
+          type: string
+          format: date
+        dtm_upd:
+          type: string
+          format: date
+      required:
+        - id
+        - category_id
+        - name
+        - detail
+        - dtm_crt
+        - dtm_upd
+    ResponseStatistics:
+      type: object
+      properties:
+        total_user:
+          type: integer
+          example: 1690
+        total_course:
+          type: integer
+          example: 57
+        total_free_course:
+          type: integer
+          example: 15
+      required:
+        - total_user
+        - total_course
+        - total_free_course
+    RequestCreateTransaction:
+      type: object
+      properties:
+        course_id:
+          type: integer
+          description: Course ID
+          example: 13
+      required:
+        - course_id
+    ResponseTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 3
+        category_id:
+          type: integer
+          example: 5
+        price:
+          type: integer
+          example: 100000
+        dtm_crt:
+          type: string
+          format: date
+        dtm_upd:
+          type: string
+          format: date
+      required:
+        - id
+        - user_id
+        - category_id
+        - price
+        - dtm_crt
+        - dtm_upd
+    ResponseLogin:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          example: johndoe@gmail.com
+        name:
+          type: string
+          example: John Doe
+        picture:
+          type: string
+          example: https://www.aws.com
+        role:
+          type: string
+          example: User
+        dtm_crt:
+          type: string
+          format: date
+        dtm_upd:
+          type: string
+          format: date
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+    ResponseCreateUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          example: johndoe@gmail.com
+        name:
+          type: string
+          example: John Doe
+        picture:
+          type: string
+          example: https://www.aws.com
+        role:
+          type: string
+          example: User
+        dtm_crt:
+          type: string
+          format: date
+        dtm_upd:
+          type: string
+          format: date
+    ResponseCreateCourse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        category_id:
+          type: integer
+          example: 5
+        name:
+          type: string
+          example: John Doe
+        detail:
+          type: string
+          example: This is John Doe
+        price:
+          type: integer
+          example: 100000
+        picture:
+          type: string
+          example: https://www.aws.com
+        dtm_crt:
+          type: string
+          format: date
+        dtm_upd:
+          type: string
+          format: date
+  responses:
+    Success:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Success
+    Created:
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Created
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Bad request
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Unauthorized
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Forbidden
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Not found
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Internal server error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
